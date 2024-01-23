@@ -1,3 +1,11 @@
+import multiprocess
+
+def task(args):
+    protocol = args[0]
+    print(protocol)
+    return True
+    # return protocol.verify(*args)
+
 class VerifiableMatMul:
     def __init__(self, A, b = None):
         if b is not None and A.base_ring() != b.base_ring():
@@ -21,16 +29,31 @@ class VerifiableMatMul:
 
     def compute(self, pk, C):
         return tuple(zip(*[protocol.compute(pki, Ci) for protocol, pki, Ci in zip(self.protocols, pk, C)]))
+        # with multiprocessing.Pool() as pool:
+        #     args = zip(self.protocols, pk, C)
+        #     _ = list(args)
+        #     res = pool.starmap(task("compute"), args)
+        #     return tuple(zip(*res))
 
     def decrypt(self, sk, V, bound):
         return tuple(protocol.decrypt(ski, Vi, bound) for protocol, ski, Vi in zip(self.protocols, sk, V))
+        # with multiprocessing.Pool() as pool:
+        #     args = zip(self.protocols, sk, V, [bound] * len(self.protocols))
+        #     _ = list(args)
+        #     res = pool.starmap(task("decrypt"), args)
+        #     return tuple(res)
 
     def verify(self, pk, fk, z, v, sgm):
         return all(protocol.verify(pki, fki, z, vi, sgmi) for protocol, pki, fki, vi, sgmi in zip(self.protocols, pk, fk, v, sgm))
+        # with multiprocess.Pool() as pool:
+        #     args = zip(self.protocols, pk, fk, [z] * len(self.protocols), v, sgm)
+        #     res = pool.map(task, args)
+        #     # print(res)
+        #     return all(res)
 
 
 class MatMulWrapper:
-    def __init__(self, A, b = None, T = 10, delta = 1000, bound = 1_000_000):
+    def __init__(self, A, b = None, T = 10, delta = 10_000, bound = 10_000_000):
         self.A = A
         self.b = vector(b) if b is not None else vector(A.base_ring(), [0] * A.nrows())
 
@@ -59,14 +82,3 @@ class MatMulWrapper:
         self.sgm = sgm
         return vector(self.protocol.decrypt(self._sk, V, self.bound)) - self.delta
 
-if __name__ == "__main__":
-    G = ZZ
-    A = random_matrix(G, 5, 3)
-    b = vector(random_matrix(G, A.nrows(), 1).list())
-    x = vector(random_matrix(G, A.ncols(), 1).list())
-
-    Av = MatMulWrapper(A, b)
-    y = Av(x)
-
-    print(A * x + b == y)
-    print(Av.verify(x, y))
