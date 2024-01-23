@@ -12,7 +12,4 @@ arr2 = [F.random_element() for _ in range(3)]
 tensor2 = Tensor(arr2)
 
 x = torch.matmul(tensor1, tensor2)
-print(vector(arr1).dot_product(vector(arr2)))
-print(tensor1, tensor2)
-print(x)
 
