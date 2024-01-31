@@ -24,28 +24,19 @@ class VerifiableMatMul:
     def setup(self, pk):
         return tuple(protocol.setup(pki) for protocol, pki in zip(self.protocols, pk))
 
-    def encrypt(self, pk, z, r):
-        return tuple(protocol.encrypt(pki, z, r) for protocol, pki in zip(self.protocols, pk))
+    def encrypt(self, pk, z):
+        return tuple(protocol.encrypt(pki, z) for protocol, pki in zip(self.protocols, pk))
 
     def compute(self, pk, C):
         return tuple(zip(*[protocol.compute(pki, Ci) for protocol, pki, Ci in zip(self.protocols, pk, C)]))
-        # with multiprocessing.Pool() as pool:
-        #     args = zip(self.protocols, pk, C)
-        #     _ = list(args)
-        #     res = pool.starmap(task("compute"), args)
-        #     return tuple(zip(*res))
 
     def decrypt(self, sk, V, bound):
         return tuple(protocol.decrypt(ski, Vi, bound) for protocol, ski, Vi in zip(self.protocols, sk, V))
-        # with multiprocessing.Pool() as pool:
-        #     args = zip(self.protocols, sk, V, [bound] * len(self.protocols))
-        #     _ = list(args)
-        #     res = pool.starmap(task("decrypt"), args)
-        #     return tuple(res)
 
     def verify(self, pk, fk, z, v, sgm):
         return all(protocol.verify(pki, fki, z, vi, sgmi) for protocol, pki, fki, vi, sgmi in zip(self.protocols, pk, fk, v, sgm))
         # with multiprocess.Pool() as pool:
+        #     # NOTE: works after removing self.protocols and pk (might be problem with pickling groups)
         #     args = zip(self.protocols, pk, fk, [z] * len(self.protocols), v, sgm)
         #     res = pool.map(task, args)
         #     # print(res)
@@ -76,8 +67,7 @@ class MatMulWrapper:
     Does A * x + b
     """
     def __call__(self, x, **kwargs):
-        r = vector(random_matrix(x.base_ring(), 1, x.degree()).list())
-        C = self.protocol.encrypt(self.pk, x, r)
+        C = self.protocol.encrypt(self.pk, x)
         V, sgm = self.protocol.compute(self.pk, C)
         self.sgm = sgm
         return vector(self.protocol.decrypt(self._sk, V, self.bound)) - self.delta

@@ -26,11 +26,9 @@ print()
 assert(fk.curve() == pk[5][0].curve()) # fk is in same group as g
 
 print("3. Encrypt an input z with PK and a chosen random r")
-r = vector(Fv, (secrets.randbelow(UPPER_BOUND) for _ in range(N)))
-print("r:", r)
 print("x:", x)
 z = vector(Fv, map(lambda xx : xx.strip(), input("z: ").split(",")))
-c = vdp.encrypt(pk, z, r)
+c = vdp.encrypt(pk, z)
 print("c:", c)
 print()
 
