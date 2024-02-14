@@ -43,7 +43,7 @@ class VerifiableDotProduct:
         self.e = pr.e
 
         # Security requirement: q > 2^T
-        q = secrets.choice(prime_range(2^T + 1, 2^(2*T)))
+        q = random_prime(2^(T + 1), False, lbound=2^T + 1)
         self.q = q
 
         Zq = Zmod(q)

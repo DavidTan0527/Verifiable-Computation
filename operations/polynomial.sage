@@ -37,7 +37,7 @@ class VerifiablePolynomial:
         self.m = pr.m
 
         # Security requirement: q > 2^T
-        q = secrets.choice(prime_range(2^T + 1, 2^(2*T)))
+        q = random_prime(2^(T + 1), False, lbound=2^T + 1)
         self.q = q
 
         Zq = Zmod(q)
@@ -75,7 +75,7 @@ class VerifiablePolynomial:
         q, G1, G2, G12, h, (g, gs), (g1, g2), W = pk
         assert(len(W) == self.dim)
 
-        coeffs = self.f.coefficients()
+        coeffs = self.f.coefficients(sparse=False)
 
         fk = coeffs[0] * g1
         for (g1_ti, h_ti), ci in zip(W[:self.dim-1], coeffs[1:]):
@@ -112,7 +112,7 @@ class VerifiablePolynomial:
         q, G1, G2, G12, h, (g, gs), (g1, g2), W = pk
 
         # Polynomial should be hidden. Shared usage here for generalization in code
-        coeffs = self.f.coefficients()
+        coeffs = self.f.coefficients(sparse=False)
 
         V = (coeffs[0] * g1, coeffs[0] * g2)
 
@@ -127,7 +127,7 @@ class VerifiablePolynomial:
         g1_t = W[0][0]
         sgm = coeffs[1] * g1 + g1_t
         if self.f.degree() > 1:
-            # g1^(t - z) g^r1
+            # g1^a2(t + z) g^a2r1
             sgm += coeffs[2] * (g1_t + C[0][0])
 
         sgm *= d
@@ -151,7 +151,8 @@ class VerifiablePolynomial:
         pi_g1_g2 = pi((g1, g2))
 
         # Find x such that x * pi((g1, g2)) == pi(V)
-        return discrete_log_lambda(pi_V, pi_g1_g2, (0, bound), operation='+')
+        y = discrete_log_lambda(pi_V, pi_g1_g2, (0, bound), operation='+', identity=Zmod(q)(1))
+        return self.f.base_ring()(y)
 
     def verify(self, pk, fk, z, v, sgm):
         q, G1, G2, G12, h, (g, gs), (g1, g2), W = pk
@@ -163,7 +164,8 @@ class VerifiablePolynomial:
         # Polynomial should be hidden. Shared usage here for generalization in code
         H = g1_t2 - z * g1_t
         if self.f.degree() > 1:
-            H += self.f.coefficients()[2] * (self.r[0] * (g_t - z * g))
+            coeffs = self.f.coefficients(sparse=False)
+            H += coeffs[2] * (self.r[0] * (g_t - z * g))
 
         verification = self.e(fk - v * g1 + H, self.sgm0)
 
