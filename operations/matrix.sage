@@ -60,8 +60,8 @@ class MatMulWrapper:
         fk = self.protocol.setup(pk)
         self.fk = fk
 
-    def verify(self, x, y):
-        return self.protocol.verify(self.pk, self.fk, x, y + self.delta, self.sgm)
+    def verify(self, pk, fk, x, y, sgm):
+        return self.protocol.verify(pk, fk, x, y + self.delta, sgm)
 
     """
     Does A * x + b
@@ -69,6 +69,6 @@ class MatMulWrapper:
     def __call__(self, x, **kwargs):
         C = self.protocol.encrypt(self.pk, x)
         V, sgm = self.protocol.compute(self.pk, C)
-        self.sgm = sgm
-        return vector(self.protocol.decrypt(self._sk, V, self.bound)) - self.delta
+        y = vector(self.protocol.decrypt(self._sk, V, self.bound)) - self.delta
+        return y, sgm
 

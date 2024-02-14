@@ -1,29 +1,53 @@
-F.<x> = PolynomialRing(Zmod(10001))
-f = 3 * x^2 + 203 * x + 10
+from sage.misc.profiler import Profiler
+
+p = Profiler()
+
+q = 311308417372352325045323285119
+assert(is_prime(q))
+
+G = Zmod(q)
+F.<x> = PolynomialRing(G)
+f = 3 * x^2 + 203 * x + 50
 vf = VerifiablePolynomial(f)
 
 print("F:", F)
 print("f:", f)
 
-pk, sk = vf.keygen(12)
+p("keygen")
+pk, sk = vf.keygen(26)
 print("pk:", pk)
 print("sk:", sk)
 
+p("setup")
 fk = vf.setup(pk)
 print("fk:", fk)
 
-z = 100
-print(f"f({z}):", f(z))
+import secrets
+z = secrets.randbelow(1000) - 500
+
+p("encrypt")
 C = vf.encrypt(pk, z)
 print("C:", C)
 
+p("compute")
 V, sgm = vf.compute(pk, C)
 print("V:", V)
 print("sgm:", sgm)
 
-y = vf.decrypt(sk, V, 1000000)
-print("Result correct?", y == f(z))
+fz = f(z)
+print("z", z)
+print("f(z):", fz)
 
+p("decrypt")
+y = vf.decrypt(sk, V, 100000000)
+print("y", y)
+print("Result correct?", y == fz)
+
+p("verify")
 verified = vf.verify(pk, fk, z, y, sgm)
 print("Result verified?", verified)
+
+p()
+
+print(p)
 
