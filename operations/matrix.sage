@@ -1,15 +1,3 @@
-from sage.parallel.multiprocessing_sage import parallel_iter
-from sage.parallel.ncpus import ncpus
-
-def f(p, *args):
-    print(p)
-    return p.verify(*args)
-# def task(args):
-#     protocol = args[0]
-#     print(protocol)
-#     return True
-#     # return protocol.verify(*args)
-
 class VerifiableMatMul:
     def __init__(self, A, b = None):
         if b is not None and A.base_ring() != b.base_ring():
@@ -38,9 +26,7 @@ class VerifiableMatMul:
         return tuple(protocol.decrypt(ski, Vi).lift() for protocol, ski, Vi in zip(self.protocols, sk, V))
 
     def verify(self, pk, fk, z, v, sgm):
-        res = parallel_iter(ncpus(), f, zip(zip(self.protocols, pk, fk, v, sgm), [{}] * self.size_out))
-        return all(res)
-        # return all(protocol.verify(pki, fki, z, vi, sgmi) for protocol, pki, fki, vi, sgmi in zip(self.protocols, pk, fk, v, sgm))
+        return all(protocol.verify(pki, fki, z, vi, sgmi) for protocol, pki, fki, vi, sgmi in zip(self.protocols, pk, fk, v, sgm))
 
 
 class MatMulWrapper:
