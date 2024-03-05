@@ -1,10 +1,14 @@
-import multiprocess
+from sage.parallel.multiprocessing_sage import parallel_iter
+from sage.parallel.ncpus import ncpus
 
-def task(args):
-    protocol = args[0]
-    print(protocol)
-    return True
-    # return protocol.verify(*args)
+def f(p, *args):
+    print(p)
+    return p.verify(*args)
+# def task(args):
+#     protocol = args[0]
+#     print(protocol)
+#     return True
+#     # return protocol.verify(*args)
 
 class VerifiableMatMul:
     def __init__(self, A, b = None):
@@ -28,28 +32,29 @@ class VerifiableMatMul:
         return tuple(protocol.encrypt(pki, z) for protocol, pki in zip(self.protocols, pk))
 
     def compute(self, pk, C):
-        return tuple(zip(*[protocol.compute(pki, Ci) for protocol, pki, Ci in zip(self.protocols, pk, C)]))
+        return tuple(zip(*[protocol.compute(pki, Ci, Wci) for protocol, pki, (Ci, Wci) in zip(self.protocols, pk, C)]))
 
-    def decrypt(self, sk, V, bound):
-        return tuple(protocol.decrypt(ski, Vi, bound) for protocol, ski, Vi in zip(self.protocols, sk, V))
+    def decrypt(self, sk, V):
+        return tuple(protocol.decrypt(ski, Vi).lift() for protocol, ski, Vi in zip(self.protocols, sk, V))
 
     def verify(self, pk, fk, z, v, sgm):
-        return all(protocol.verify(pki, fki, z, vi, sgmi) for protocol, pki, fki, vi, sgmi in zip(self.protocols, pk, fk, v, sgm))
-        # with multiprocess.Pool() as pool:
-        #     # NOTE: works after removing self.protocols and pk (might be problem with pickling groups)
-        #     args = zip(self.protocols, pk, fk, [z] * len(self.protocols), v, sgm)
-        #     res = pool.map(task, args)
-        #     # print(res)
-        #     return all(res)
+        res = parallel_iter(ncpus(), f, zip(zip(self.protocols, pk, fk, v, sgm), [{}] * self.size_out))
+        return all(res)
+        # return all(protocol.verify(pki, fki, z, vi, sgmi) for protocol, pki, fki, vi, sgmi in zip(self.protocols, pk, fk, v, sgm))
 
 
 class MatMulWrapper:
-    def __init__(self, A, b = None, T = 10, delta = 10_000, bound = 10_000_000):
-        self.A = A
-        self.b = vector(b) if b is not None else vector(A.base_ring(), [0] * A.nrows())
+    def __init__(self, A, b = None, T = 10, precision = 1, delta = 10_000):
+        self.precision_in = vector([precision] * A.ncols())
+        self.inv_precision_in = vector([1/precision] * A.ncols())
+        self.precision_out = vector([precision] * A.nrows())
+        self.inv_precision_out = vector([1/precision] * A.nrows())
 
-        self.delta = vector(b.base_ring(), [delta] * b.degree())
-        self.bound = bound
+        self.A = A
+        self.b = vector(b).pairwise_product(self.precision_out) if b is not None \
+                else vector(A.base_ring(), [0] * A.nrows())
+
+        self.delta = vector(self.b.base_ring(), [delta * precision] * self.b.degree())
 
         self.protocol = VerifiableMatMul(self.A, self.b + self.delta)
         pk, sk = self.protocol.keygen(T)
@@ -61,14 +66,18 @@ class MatMulWrapper:
         self.fk = fk
 
     def verify(self, pk, fk, x, y, sgm):
-        return self.protocol.verify(pk, fk, x, y + self.delta, sgm)
+        x = x.pairwise_product(self.precision_in)
+        y = y.pairwise_product(self.precision_out) + self.delta
+        return self.protocol.verify(pk, fk, x, y, sgm)
 
     """
     Does A * x + b
     """
     def __call__(self, x, **kwargs):
+        x = x.pairwise_product(self.precision_in)
         C = self.protocol.encrypt(self.pk, x)
         V, sgm = self.protocol.compute(self.pk, C)
-        y = vector(self.protocol.decrypt(self._sk, V, self.bound)) - self.delta
+        y = vector(self.protocol.decrypt(self._sk, V))
+        y = (y - self.delta).pairwise_product(self.inv_precision_out)
         return y, sgm
 

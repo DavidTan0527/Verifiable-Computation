@@ -26,11 +26,11 @@ import secrets
 z = secrets.randbelow(1000) - 500
 
 p("encrypt")
-C = vf.encrypt(pk, z)
+C, Wc = vf.encrypt(pk, z)
 print("C:", C)
 
 p("compute")
-V, sgm = vf.compute(pk, C)
+V, sgm = vf.compute(pk, C, Wc)
 print("V:", V)
 print("sgm:", sgm)
 
@@ -39,7 +39,7 @@ print("z", z)
 print("f(z):", fz)
 
 p("decrypt")
-y = vf.decrypt(sk, V, 100000000)
+y = vf.decrypt(sk, V)
 print("y", y)
 print("Result correct?", y == fz)
 

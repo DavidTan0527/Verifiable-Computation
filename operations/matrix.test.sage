@@ -3,8 +3,8 @@ from sage.misc.profiler import Profiler
 p = Profiler()
 
 G = ZZ
-# A = random_matrix(G, 32, 64)
-A = random_matrix(G, 16, 32)
+# A = random_matrix(G, 16, 32)
+A = random_matrix(G, 2, 3)
 b = vector(random_matrix(G, A.nrows(), 1).list())
 x = vector(random_matrix(G, A.ncols(), 1).list())
 

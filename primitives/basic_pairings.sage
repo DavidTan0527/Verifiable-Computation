@@ -103,6 +103,7 @@ class Pairing:
         return self.G12((nx * self.w^2, ny * self.w^3))
 
     def e(self, P, Q):
+        # print(f'Task executing with {P}, {Q}', flush=True)
         if not (P.curve() == self.G1 and Q.curve() == self.G2):
             raise ValueError("Points do not lie on the curves defined")
 
@@ -150,8 +151,3 @@ class Pairing:
         assert(Px_Qx7 == Px_Qx * Px_Qx6)
         print("Tested e(Px, 7*Qx) == e(Px, Qx) * e(Px, 6*Qx)")
 
-
-
-# if __name__ == "__main__":
-#     pr = Pairing()
-#     pr.test()
