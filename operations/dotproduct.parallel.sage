@@ -119,12 +119,15 @@ class VerifiableDotProduct(MVP):
 
         sgn = 1
 
+
         start = time.time()
 
-        result = [self.e(sgmi, g1_t_h_t[1] - zz * h) for g1_t_h_t, zz, sgmi in zip(W[:-1], z, sgm)]
-        for term in result:
+        args = [(sgmi, g1_t_h_t[1] - zz * h) for g1_t_h_t, zz, sgmi in zip(W[:-1], z, sgm)]
+        result = self.e(args)
+        for (args, kwargs), term in list(result):
             sgn *= term
-        print('List comprehension pairings:', time.time() - start)
+
+        print('"Parallel" pairings:', time.time() - start)
 
         # Check with pairing
         return verification == sgn

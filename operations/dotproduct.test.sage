@@ -1,6 +1,6 @@
 import secrets
 
-N = 5
+N = 50
 UPPER_BOUND = 100
 Fv = ZZ
 x = vector(Fv, [secrets.randbelow(UPPER_BOUND) for _ in range(N)])
@@ -27,7 +27,8 @@ assert(fk.curve() == pk[5][0].curve()) # fk is in same group as g
 
 print("3. Encrypt an input z with PK and a chosen random r")
 print("x:", x)
-z = vector(Fv, map(lambda xx : xx.strip(), input("z: ").split(",")))
+# z = vector(Fv, map(lambda xx : xx.strip(), input("z: ").split(",")))
+z = vector(Fv, [1] * N)
 c, Wc = vdp.encrypt(pk, z)
 print("c:", c)
 print()

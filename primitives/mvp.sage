@@ -20,6 +20,8 @@ class MVP:
             raise ValueError("Security parameter T must be a positive integer")
 
         pr = Pairing()
+        self.pr = pr
+
         G1 = pr.G1
         G2 = pr.G2
         G12 = pr.G12

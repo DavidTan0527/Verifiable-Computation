@@ -1,4 +1,7 @@
+import os
+
 from timeit import timeit
+
 """
 Ref: https://theory.stanford.edu/~dfreeman/papers/ants-embedding.pdf (Example 3.6)
 EC with embedding degree 10
@@ -83,9 +86,6 @@ class Pairing:
 
         assert(self.m * self.P == 0 and self.m * self.Q == 0)
 
-        # Used for point twisting
-        self.w = Fp12([0, 1] + [0] * 10)
-
     # https://github.com/ethereum/py_ecc/blob/a1d18addb439d7659a9cbac861bf1518371f0afd/py_ecc/bn128/bn128_curve.py#L129
     def twist(self, P):
         _x, _y = P.xy()
@@ -100,10 +100,12 @@ class Pairing:
         nx = self.Fp12([xcoeffs[0]] + [0] * 5 + [xcoeffs[1]] + [0] * 5)
         ny = self.Fp12([ycoeffs[0]] + [0] * 5 + [ycoeffs[1]] + [0] * 5)
 
-        return self.G12((nx * self.w^2, ny * self.w^3))
+        w = self.Fp12([0, 1] + [0] * 10)
 
+        return self.G12((nx * w^2, ny * w^3))
+
+    @parallel('reference', ncpus=os.cpu_count())
     def e(self, P, Q):
-        # print(f'Task executing with {P}, {Q}', flush=True)
         if not (P.curve() == self.G1 and Q.curve() == self.G2):
             raise ValueError("Points do not lie on the curves defined")
 
@@ -112,6 +114,7 @@ class Pairing:
         Qx = self.twist(Q)
 
         assert(Px.parent() == Qx.parent())
+
         return Px.tate_pairing(Qx, self.m, self.k, q=self.p)
 
     def test(self):
