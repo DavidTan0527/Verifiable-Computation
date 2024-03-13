@@ -85,7 +85,7 @@ class MVP:
 
         return C, Wc
 
-    def compute(self, pk, C, Wc=[]):
+    def compute(self, pk, C):
         raise NotImplementedError("Child classes must implement their own `compute`")
 
     def decrypt(self, sk, V):

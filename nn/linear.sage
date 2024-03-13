@@ -15,6 +15,9 @@ class VerifiableDense(VerifiableMatMul):
                                       precision = self.precision,
                                       delta = self.delta)
 
+        self.pk = self.protocol.pk
+        self.fk = self.protocol.fk
+
     def set(self, A = None, b = None):
         if A is not None:
             if A.ncols() != self.size_in or A.nrows() != self.size_out:
@@ -22,14 +25,13 @@ class VerifiableDense(VerifiableMatMul):
             self.weights = A
         if b is not None:
             if b.degree() != self.size_out:
-                raise ValueError("Dimension of A does not match")
+                raise ValueError("Dimension of b does not match")
             self.bias = b
 
-        self.protocol = MatMulWrapper(self.weights,
-                                      b = self.bias,
-                                      T = self.T,
-                                      precision = self.precision,
-                                      delta = self.delta)
+        self.protocol.updateFunc(self.weights, self.bias)
+
+    def verify(self, pk, fk, x, y, sgm):
+        return self.protocol.verify(pk, fk, x, y, sgm)
 
     def forward(self, x):
         if x.degree() != self.size_in:

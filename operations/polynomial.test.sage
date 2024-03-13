@@ -26,11 +26,11 @@ import secrets
 z = secrets.randbelow(1000) - 500
 
 p("encrypt")
-C, Wc = vf.encrypt(pk, z)
+C = vf.encrypt(pk, z)
 print("C:", C)
 
 p("compute")
-V, sgm = vf.compute(pk, C, Wc)
+V, sgm = vf.compute(pk, C)
 print("V:", V)
 print("sgm:", sgm)
 
