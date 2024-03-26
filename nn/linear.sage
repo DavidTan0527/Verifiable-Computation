@@ -1,4 +1,4 @@
-class VerifiableDense(VerifiableMatMul):
+class VerifiableDense(VerifiableMatMul, VerifiableNNLayer):
     def __init__(self, size_in, size_out, T = 32, lbound = -10_000, precision = 10_000):
         self.size_in, self.size_out = size_in, size_out
         self.precision = precision

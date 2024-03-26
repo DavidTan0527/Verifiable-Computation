@@ -1,7 +1,4 @@
-import os
-
 from timeit import timeit
-
 """
 Ref: https://theory.stanford.edu/~dfreeman/papers/ants-embedding.pdf (Example 3.6)
 EC with embedding degree 10
@@ -43,8 +40,9 @@ class Pairing:
         assert(p % 4 == 3)
         k = 12
 
-        self.p = p # base field prime order
+        self.t = t # trace of Frobenius
         self.r = r # curve order
+        self.p = p # base field prime order
         self.k = k # embedding degree
 
         # https://hackmd.io/@vivi432/bn128-in-c
@@ -67,11 +65,12 @@ class Pairing:
 
         b1 = 3
         self.G1 = EllipticCurve(Fp, [0, b1])
-        assert(self.G1.order() == r)
+        assert(self.G1.order() == self.r)
+        assert(self.G1.trace_of_frobenius() == self.t)
 
         b2 = 3 * zeta^(-1)
         self.G2 = EllipticCurve(Fp2, [0, b2])
-        assert(self.G2.order() % r == 0)
+        assert(self.G2.order() % self.r == 0)
 
         self.G12 = EllipticCurve(Fp12, [0, b1])
 
@@ -82,9 +81,12 @@ class Pairing:
                            4082367875863433681332203403145435568316851327593401208105741076214120093531 * u
                           + 8495653923123431417604973247489272438418190587263600148770280649306958101930))
 
-        self.m = r
+        self.m = self.r
 
         assert(self.m * self.P == 0 and self.m * self.Q == 0)
+
+        # Used for point twisting
+        self.w = Fp12([0, 1] + [0] * 10)
 
     # https://github.com/ethereum/py_ecc/blob/a1d18addb439d7659a9cbac861bf1518371f0afd/py_ecc/bn128/bn128_curve.py#L129
     def twist(self, P):
@@ -100,11 +102,8 @@ class Pairing:
         nx = self.Fp12([xcoeffs[0]] + [0] * 5 + [xcoeffs[1]] + [0] * 5)
         ny = self.Fp12([ycoeffs[0]] + [0] * 5 + [ycoeffs[1]] + [0] * 5)
 
-        w = self.Fp12([0, 1] + [0] * 10)
+        return self.G12((nx * self.w^2, ny * self.w^3))
 
-        return self.G12((nx * w^2, ny * w^3))
-
-    @parallel('reference', ncpus=os.cpu_count())
     def e(self, P, Q):
         if not (P.curve() == self.G1 and Q.curve() == self.G2):
             raise ValueError("Points do not lie on the curves defined")
@@ -115,7 +114,8 @@ class Pairing:
 
         assert(Px.parent() == Qx.parent())
 
-        return Px.tate_pairing(Qx, self.m, self.k, q=self.p)
+        # return Px.tate_pairing(Qx, self.m, self.k, q=self.p)
+        return Px.ate_pairing(Qx, self.m, self.k, self.t, q=self.p)
 
     def test(self):
         m = self.m

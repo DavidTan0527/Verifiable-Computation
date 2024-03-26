@@ -1,6 +1,6 @@
 import random
 
-class VerifiableDropout():
+class VerifiableDropout(VerifiableNNLayer):
     def __init__(self, size, p = 0.5, T = 32, lbound = -10_000, precision = 10_000):
         self.size = size
         self.precision = precision
