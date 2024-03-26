@@ -1,5 +1,4 @@
 from itertools import islice
-from multiprocess.pool import Pool, ThreadPool
 
 def random_nonzero_element(G):
     return list(islice(filter(lambda x: x != 0 , (G.random_element() for _ in ZZ)), 1))[0]
@@ -173,11 +172,6 @@ class VerifiableDotProduct:
         verification = self.e(fk - v * g1 + H, self.sgm0)
 
         sgn = 1
-        # args = list(zip(sgm, map(lambda wzz: wzz[0][1] - wzz[1] * h, zip(W[:-1], z))))
-        # with Pool() as pool:
-        #     # wzz = ((g1_t, h_t), zz)
-        #     res = pool.starmap(self.e, args)
-        #     print(res)
 
         for (g1_t, h_t), zz, sgmi in zip(W[:-1], z, sgm):
             sgn *= self.e(sgmi, h_t - zz * h)

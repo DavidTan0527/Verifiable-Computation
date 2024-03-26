@@ -1,6 +1,6 @@
 import secrets
 
-N = 50
+N = 1
 UPPER_BOUND = 100
 Fv = ZZ
 x = vector(Fv, [secrets.randbelow(UPPER_BOUND) for _ in range(N)])
@@ -29,12 +29,12 @@ print("3. Encrypt an input z with PK and a chosen random r")
 print("x:", x)
 # z = vector(Fv, map(lambda xx : xx.strip(), input("z: ").split(",")))
 z = vector(Fv, [1] * N)
-c = vdp.encrypt(pk, z)
+c, Wc = vdp.encrypt(pk, z)
 print("c:", c)
 print()
 
 print("4. Compute the dot product over the encrypted input z (also outputs signature)")
-V, sgm = vdp.compute(pk, c)
+V, sgm = vdp.compute(pk, c, Wc)
 print("V:", V)
 print("σ:", sgm)
 print()

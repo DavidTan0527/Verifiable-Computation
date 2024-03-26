@@ -1,4 +1,4 @@
-class VerifiableReLU():
+class VerifiableReLU(VerifiableNNLayer):
     """
     ReLU for values ranging between [-a, a] with a > 0 can be approximated by polynomial x^2 + a * x = 0
     The linear part can be scaled by c, i.e. ReLU(x) = cx, x > 0

@@ -40,9 +40,8 @@ class Pairing:
         assert(p % 4 == 3)
         k = 12
 
-        self.t = t # trace of Frobenius
-        self.r = r # curve order
         self.p = p # base field prime order
+        self.r = r # curve order
         self.k = k # embedding degree
 
         # https://hackmd.io/@vivi432/bn128-in-c
@@ -65,12 +64,11 @@ class Pairing:
 
         b1 = 3
         self.G1 = EllipticCurve(Fp, [0, b1])
-        assert(self.G1.order() == self.r)
-        assert(self.G1.trace_of_frobenius() == self.t)
+        assert(self.G1.order() == r)
 
         b2 = 3 * zeta^(-1)
         self.G2 = EllipticCurve(Fp2, [0, b2])
-        assert(self.G2.order() % self.r == 0)
+        assert(self.G2.order() % r == 0)
 
         self.G12 = EllipticCurve(Fp12, [0, b1])
 
@@ -81,7 +79,7 @@ class Pairing:
                            4082367875863433681332203403145435568316851327593401208105741076214120093531 * u
                           + 8495653923123431417604973247489272438418190587263600148770280649306958101930))
 
-        self.m = self.r
+        self.m = r
 
         assert(self.m * self.P == 0 and self.m * self.Q == 0)
 
@@ -114,8 +112,8 @@ class Pairing:
 
         assert(Px.parent() == Qx.parent())
 
-        # return Px.tate_pairing(Qx, self.m, self.k, q=self.p)
-        return Px.ate_pairing(Qx, self.m, self.k, self.t, q=self.p)
+        # TODO: issues parallelizing this
+        return Px.tate_pairing(Qx, self.m, self.k, q=self.p)
 
     def test(self):
         m = self.m

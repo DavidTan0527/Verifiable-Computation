@@ -1,8 +1,6 @@
 import time
-import os
 
 from itertools import islice
-from pprint import pprint
 
 def random_nonzero_element(G):
     return list(islice(filter(lambda x: x != 0 , (G.random_element() for _ in ZZ)), 1))[0]
