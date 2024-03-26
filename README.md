@@ -28,6 +28,6 @@ There are two ways of playing around with this project.
 1. Run `sage demo.sage`
 
 # TODO
-[ ] Complete utility classes to build the model.
-[ ] Complete an all-in-one script.
-[ ] Update README with steps.
+- [ ] Complete utility classes to build the model.
+- [ ] Complete an all-in-one script.
+- [ ] Update README with steps.
