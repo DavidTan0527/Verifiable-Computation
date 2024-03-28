@@ -7,7 +7,7 @@ class MVP:
     def __init__(self, *args, **kwargs):
         raise NotImplementedError("Child classes must implement their own __init__")
 
-    def getW(self, g1, h):
+    def getW(self, g1, g, h):
         raise NotImplementedError("Child classes must specify array W of supporting values for `keygen`")
 
     def keygen(self, T):
@@ -42,7 +42,6 @@ class MVP:
 
         gs = s * g
         g1 = G1.random_element()
-        g2 = G1.random_element()
 
         W = self.getW(g1, g, h)
 
@@ -60,7 +59,7 @@ class MVP:
         lmd = (np-1) * (nq-1)
         mu = 1 / Zmod(n)(lmd)
 
-        PK = (q, G1, G2, G12, h, (g, gs), (g1, g2), W, (n, g_n2))
+        PK = (q, G1, G2, G12, h, (g, gs), g1, W, (n, g_n2))
         SK = (s, (lmd, mu))
 
         # Note that in practice, the PK is not kept in the object, but passed in as it is public information.
@@ -73,8 +72,7 @@ class MVP:
         raise NotImplementedError("Child classes must implement their own `setup`")
 
     def encrypt(self, pk, z):
-        q, G1, G2, G12, h, (g, gs), (g1, g2), W, (n, g_n2) = pk
-
+        q, G1, G2, G12, h, (g, gs), g1, W, (n, g_n2) = pk
 
         r = vector(random_nonzero_element(Zmod(n^2)) for _ in range(len(z)))
         # Client is able to retrieve the random vector for verification later
@@ -85,11 +83,11 @@ class MVP:
 
         return C, Wc
 
-    def compute(self, pk, C, Wc=[]):
+    def compute(self, pk, C):
         raise NotImplementedError("Child classes must implement their own `compute`")
 
-    def decrypt(self, sk, V):
-        q, G1, G2, G12, h, (g, gs), (g1, g2), W, (n, g_n2) = self.pk
+    def decrypt(self, sk, V, **kwargs):
+        q, G1, G2, G12, h, (g, gs), g1, W, (n, g_n2) = self.pk
         s, (lmd, mu) = sk
 
         def L(x): return (Zmod(n^2)(x).lift() - 1) / n

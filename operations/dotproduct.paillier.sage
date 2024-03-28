@@ -50,7 +50,7 @@ class VerifiableDotProduct(MVP):
         Ran by model manager. Setups the function `f` (dot product) with necessary algebraic structures.
         The function `f` is omitted from the parameters because it can be deduced from `x` in constructor.
         """
-        q, G1, G2, G12, h, (g, gs), (g1, g2), W, (n, g_n2) = pk
+        q, G1, G2, G12, h, (g, gs), g1, W, (n, g_n2) = pk
         assert(len(W) == len(self.x) + 1)
 
         fk = self.c * g1
@@ -82,7 +82,7 @@ class VerifiableDotProduct(MVP):
 
         Ran by the service provider. `f` omitted because it is implied in the `setup`
         """
-        q, G1, G2, G12, h, (g, gs), (g1, g2), W, (n, g_n2) = pk
+        q, G1, G2, G12, h, (g, gs), g1, W, (n, g_n2) = pk
         C, Wc = C
 
         r = random_nonzero_element(Zmod(n^2))
@@ -112,7 +112,7 @@ class VerifiableDotProduct(MVP):
         """
 
     def verify(self, pk, fk, z, v, sgm):
-        q, G1, G2, G12, h, (g, gs), (g1, g2), W, (n, g_n2) = pk
+        q, G1, G2, G12, h, (g, gs), g1, W, (n, g_n2) = pk
 
         assert(len(W) == len(z) + 1 and len(z) == len(sgm))
 
@@ -124,12 +124,9 @@ class VerifiableDotProduct(MVP):
 
         sgn = 1
 
-        start = time.time()
-
         result = [self.e(sgmi, g1_t_h_t[1] - zz * h) for g1_t_h_t, zz, sgmi in zip(W[:-1], z, sgm)]
         for term in result:
             sgn *= term
-        print('List comprehension pairings:', time.time() - start)
 
         # Check with pairing
         return verification == sgn

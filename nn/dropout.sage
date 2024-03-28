@@ -35,7 +35,6 @@ class VerifiableDropout(VerifiableNNLayer):
 
         # Change to a different dropout mask
         mask = self._get_mask()
-        print(mask)
         self.protocol.updateFunc(A = mask)
         self.fk = self.protocol.fk
 

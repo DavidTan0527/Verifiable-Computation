@@ -29,7 +29,7 @@ class VerifiablePolynomial(MVP):
         Ran by model manager. Setups the function `f` (dot product) with necessary algebraic structures.
         The function `f` is omitted from the parameters because it can be deduced from `x` in constructor.
         """
-        q, G1, G2, G12, h, (g, gs), (g1, g2), W, (n, g_n2) = pk
+        q, G1, G2, G12, h, (g, gs), g1, W, (n, g_n2) = pk
         assert(len(W) == self.dim)
 
         coeffs = self.f.coefficients(sparse=False)
@@ -58,7 +58,7 @@ class VerifiablePolynomial(MVP):
 
         Ran by the service provider. `f` omitted because it is implied in the `setup`
         """
-        q, G1, G2, G12, h, (g, gs), (g1, g2), W, (n, g_n2) = pk
+        q, G1, G2, G12, h, (g, gs), g1, W, (n, g_n2) = pk
         C, Wc = C
 
         # Polynomial should be hidden. Shared usage here for generalization in code
@@ -96,7 +96,7 @@ class VerifiablePolynomial(MVP):
         return self.f.base_ring()(super().decrypt(sk, V))
 
     def verify(self, pk, fk, z, v, sgm):
-        q, G1, G2, G12, h, (g, gs), (g1, g2), W, (n, g_n2) = pk
+        q, G1, G2, G12, h, (g, gs), g1, W, (n, g_n2) = pk
 
         g1_t, h_t = W[0]
         g1_t2, h_t2 = W[1]

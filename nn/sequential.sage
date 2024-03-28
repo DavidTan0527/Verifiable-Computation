@@ -16,7 +16,7 @@ class VerifiableSequential:
     def verify(self, pks, fks, x, y, sig):
         for layer, pk, fk, sgm in zip(self._layers, pks, fks, sig):
             inter_x, _ = layer.forward(x)
-            if not layer.verify(pk, fk, x, inter_x, sgm)
+            if not layer.verify(pk, fk, x, inter_x, sgm):
                 return False
 
             x = inter_x
