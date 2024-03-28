@@ -3,7 +3,7 @@ from itertools import islice
 def random_nonzero_element(G):
     return list(islice(filter(lambda x: x != 0 , (G.random_element() for _ in ZZ)), 1))[0]
 
-class MVP:
+class SCC:
     def __init__(self, *args, **kwargs):
         raise NotImplementedError("Child classes must implement their own __init__")
 

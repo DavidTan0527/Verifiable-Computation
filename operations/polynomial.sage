@@ -4,7 +4,7 @@ import secrets
 def random_nonzero_element(G):
     return list(islice(filter(lambda x: x != 0 , (G.random_element() for _ in ZZ)), 1))[0]
 
-class VerifiablePolynomial(MVP):
+class VerifiablePolynomial(SCC):
     def __init__(self, f):
         """
         f: Polynomial to compute. Type: sage Polynomial object

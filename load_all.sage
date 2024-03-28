@@ -1,5 +1,5 @@
 load("primitives/basic_pairings.sage")
-load("primitives/mvp.sage")
+load("primitives/scc.sage")
 
 load("operations/dotproduct.paillier.sage")
 load("operations/matrix.sage")

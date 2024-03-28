@@ -5,7 +5,7 @@ from itertools import islice
 def random_nonzero_element(G):
     return list(islice(filter(lambda x: x != 0 , (G.random_element() for _ in ZZ)), 1))[0]
 
-class VerifiableDotProduct(MVP):
+class VerifiableDotProduct(SCC):
     def __init__(self, x, c = 0):
         """
         x: Dot product vector. Type: sage vector object
