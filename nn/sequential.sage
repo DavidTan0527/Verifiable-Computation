@@ -21,7 +21,6 @@ class VerifiableSequential:
             return False
 
         for layer, pk, fk, sgm, inter_y in zip(self._layers, pks, fks, sgms, inter_ys):
-            print(layer)
             if not layer.verify(pk, fk, x, inter_y, sgm):
                 return False
             x = inter_y

@@ -14,7 +14,6 @@ class VerifiableDense(VerifiableMatMul, VerifiableNNLayer):
 
         self.protocol = VerifiableMatMul(self.weights,
                                          b = self.bias,
-                                         T = self.T,
                                          precision = self.precision,
                                          delta = self.delta)
 
@@ -53,15 +52,15 @@ class VerifiableDense(VerifiableMatMul, VerifiableNNLayer):
 
     def verify(self, pk, fk, x, y, sgm):
         y = y * self.mat_precision
-        print(self, x, y, self.weights)
         return self.protocol.verify(pk, fk, x, y, sgm)
 
     def forward(self, x):
         if x.degree() != self.size_in:
             raise ValueError("Dimension does not match")
         
-        y, sgm = self.protocol(x)
-        print(self, x, y, self.weights)
+        C = self.protocol.encrypt(self.pk, x)
+        V, sgm = self.protocol.compute(self.pk, C)
+        y = self.protocol.decrypt(self._sk, V)
         y = y / self.mat_precision
         return y, sgm
 

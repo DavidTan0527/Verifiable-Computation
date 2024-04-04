@@ -24,18 +24,5 @@ pk, fk = model.pk, model.fk
 
 valid = model.verify(pk, fk, x, y, sig)
 invalid = model.verify(pk, fk, x, vector(random_matrix(G, size, 1).list()), sig)
-print(valid, invalid)
 assert(valid and not invalid)
-
-# G = ZZ
-# dense = VerifiableDense(A.ncols(), A.nrows(), T=20, mat_precision=10, precision=10)
-# dense.set(A, vector([0]*4))
-# relu = VerifiableReLU(10, T=T, precision=10)
-
-# x = vector([0.4, 1.5, 1.7])
-# s = VerifiableSequential([dense, relu])
-
-# y, sgm = s.evaluate(x)
-# print(y)
-# pprint(sgm)
 
