@@ -17,17 +17,16 @@ Running Sage:
 ```
 
 # Getting Started
-There are two ways of playing around with this project.
 
-## Running in a sage session
-1. Open a sage session with `sage`.
-2. Run the following line: ...
-3. (Add step-by-step guide to build the model and run)
+## Running the demo code
+1. Open a sage session with `sage` at the root directory of the project.
+2. Run: `load("load_all.sage"); load("demo.sage");`
 
-## Running an all-in-one sage script
-1. Run `sage demo.sage`
+## Building your own layer
+Refer to `demo.sage` for an example.
 
 # TODO
-- [ ] Complete utility classes to build the model.
-- [ ] Complete an all-in-one script.
-- [ ] Update README with steps.
+- [x] Complete utility classes to build the model.
+- [x] Complete an all-in-one script.
+- [x] Update README with steps.
+- [ ] Add documentation for interface methods and usages.
