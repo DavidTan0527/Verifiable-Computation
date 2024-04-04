@@ -48,8 +48,8 @@ class Pairing:
         Fp = GF(p)
         self.Fp = Fp
 
-        P.<x> = Fp[]
-        Fp2.<u> = Fp.extension(x^2 + 1)
+        P.<u> = Fp[]
+        Fp2.<u> = Fp.extension(u^2 + 1)
         self.Fp2 = Fp2
 
         zeta = u+9
@@ -57,7 +57,7 @@ class Pairing:
                and len(zeta.nth_root(3, all=True)) == 0)
 
         P.<t> = Fp2[]
-        Fp12.<w> = Fp2.extension(t^6 - zeta)
+        Fp12.<t> = Fp2.extension(t^6 - zeta)
         self.Fp12 = Fp12
 
         assert(Fp.order() ^ 2 == Fp2.order() and Fp2.order() ^ 6 == Fp12.order())
