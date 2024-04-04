@@ -7,14 +7,14 @@ assert(is_prime(q))
 
 G = Zmod(q)
 F.<x> = PolynomialRing(G)
-f = 3 * x^2 + 203 * x + 50
+f = 3 * x^2 + 203 * x + 5
 vf = VerifiablePolynomial(f)
 
 print("F:", F)
 print("f:", f)
 
 p("keygen")
-pk, sk = vf.keygen(26)
+pk, sk = vf.keygen(32)
 print("pk:", pk)
 print("sk:", sk)
 
@@ -23,7 +23,7 @@ fk = vf.setup(pk)
 print("fk:", fk)
 
 import secrets
-z = secrets.randbelow(1000) - 500
+z = secrets.randbelow(3000) - 1500
 
 p("encrypt")
 C = vf.encrypt(pk, z)

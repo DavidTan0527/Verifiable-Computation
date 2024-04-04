@@ -3,11 +3,16 @@ import time
 
 from itertools import product
 
-Ns = [1, 2, 4, 8, 16, 32]
+load("operations/dotproduct.paillier.sage")
+
+Ns = [1, 2, 4, 8, 16, 32, 64]
 Ts = [16, 32, 128]
 rounds = 5
 UPPER_BOUND = 100
 Fv = ZZ
+
+ntmp = {}
+tnmp = {}
 
 print(f"#rounds = {rounds}")
 for N, T in product(Ns, Ts):
@@ -41,3 +46,13 @@ for N, T in product(Ns, Ts):
         assert(valid)
 
     print(f"N = {N}, T = {T:<3}, avg. time = {total/rounds:.5f}")
+    if T not in tnmp: tnmp[T] = []
+    if N not in ntmp: ntmp[N] = []
+    tnmp[T].append((N, total/rounds))
+    ntmp[N].append((T, total/rounds))
+
+for T, arr in tnmp.items():
+    print(T, "".join(map(str, arr)))
+print("===")
+for N, arr in ntmp.items():
+    print(N, "".join(map(str, arr)))

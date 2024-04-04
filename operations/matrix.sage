@@ -1,7 +1,7 @@
 class VerifiableMatMul:
     def __init__(self, A, b = None):
-        if b is not None and A.base_ring() != b.base_ring():
-            raise ValueError("A and b must have the same base ring")
+        # if b is not None and A.base_ring() != b.base_ring():
+        #     raise ValueError("A and b must have the same base ring")
         if b is not None and b.degree() != A.nrows():
             raise ValueError("A and b must have compatible sizes")
 

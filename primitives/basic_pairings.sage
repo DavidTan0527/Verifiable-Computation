@@ -40,7 +40,6 @@ class Pairing:
         assert(p % 4 == 3)
         k = 12
 
-        self.t = t # trace of Frobenius map
         self.p = p # base field prime order
         self.r = r # curve order
         self.k = k # embedding degree
@@ -114,7 +113,7 @@ class Pairing:
         assert(Px.parent() == Qx.parent())
 
         # TODO: issues parallelizing this
-        return Px.ate_pairing(Qx, self.m, self.k, self.t, q=self.p)
+        return Px.tate_pairing(Qx, self.m, self.k, q=self.p)
 
     def test(self):
         m = self.m
