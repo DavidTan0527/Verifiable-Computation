@@ -9,39 +9,51 @@ class VerifiableDense(VerifiableMatMul, VerifiableNNLayer):
         self.T = T
         self.delta = -lbound * precision if lbound < 0 else 0
 
-        # default to random weights and bias
-        self.weights = random_matrix(RR, size_out, size_in)\
-                            .apply_map(lambda x : floor(x * self.mat_precision))\
-                            .change_ring(ZZ)
+        self.weights = random_matrix(ZZ, size_out, size_in)
+        self.bias = vector(random_matrix(ZZ, size_out, 1).list())
 
-        self.bias = vector(random_matrix(RR, size_out, 1).list())\
-                            .apply_map(lambda x : floor(x * self.mat_precision))\
-                            .change_ring(ZZ)
+        self.protocol = VerifiableMatMul(self.weights,
+                                         b = self.bias,
+                                         T = self.T,
+                                         precision = self.precision,
+                                         delta = self.delta)
 
-        self.protocol = MatMulWrapper(self.weights,
-                                      b = self.bias,
-                                      T = self.T,
-                                      precision = self.precision,
-                                      delta = self.delta)
+        pk, sk = self.protocol.keygen(T)
+        self.pk = pk
+        self._sk = sk
 
-        self.pk = self.protocol.pk
-        self.fk = self.protocol.fk
+        fk = self.protocol.setup(pk)
+        self.fk = fk
 
     def set(self, A = None, b = None):
         if A is not None:
             if A.ncols() != self.size_in or A.nrows() != self.size_out:
                 raise ValueError("Dimension of A does not match")
-            self.weights = A.apply_map(lambda x : floor(x * self.mat_precision))\
-                            .change_ring(ZZ)
+            self.weights = A
+
         if b is not None:
             if b.degree() != self.size_out:
                 raise ValueError("Dimension of b does not match")
             self.bias = b
+        else:
+            self.bias = vector([0] * self.size_out)
+
+        # Scale and cut off higher precision points
+        self.weights = self.weights.apply_map(lambda x : floor(x * self.mat_precision))\
+                            .change_ring(ZZ)
+
+        self.bias = self.bias.apply_map(lambda x : floor(x * self.mat_precision))\
+                             .change_ring(ZZ)
 
         self.protocol.updateFunc(self.weights, self.bias)
+        fk = self.protocol.setup(self.pk)
+        self.fk = fk
+
+        return self
 
     def verify(self, pk, fk, x, y, sgm):
         y = y * self.mat_precision
+        print(self, x, y, self.weights)
         return self.protocol.verify(pk, fk, x, y, sgm)
 
     def forward(self, x):
@@ -49,6 +61,7 @@ class VerifiableDense(VerifiableMatMul, VerifiableNNLayer):
             raise ValueError("Dimension does not match")
         
         y, sgm = self.protocol(x)
+        print(self, x, y, self.weights)
         y = y / self.mat_precision
         return y, sgm
 

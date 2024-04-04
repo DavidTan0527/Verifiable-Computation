@@ -1,7 +1,5 @@
-class VerifiableMatMul:
+class VerifiableMatMulInner:
     def __init__(self, A, b = None):
-        # if b is not None and A.base_ring() != b.base_ring():
-        #     raise ValueError("A and b must have the same base ring")
         if b is not None and b.degree() != A.nrows():
             raise ValueError("A and b must have compatible sizes")
 
@@ -10,9 +8,19 @@ class VerifiableMatMul:
         self.b = b if b is not None else vector(A.base_ring(), [0] * self.size_out)
         self.protocols = [VerifiableDotProduct(A[i], self.b[i]) for i in range(self.size_out)]
 
-    def updateFunc(self, A, b):
-        for i, (Ai, bi) in enumerate(zip(A.rows(), b)):
-            self.protocols[i].updateFunc(Ai, bi)
+    def updateFunc(self, A, b = None):
+        if self.A.dimensions() != A.dimensions() \
+                or (b is not None and b.degree() != A.nrows()):
+            raise ValueError("Invalid update to a different dimension")
+
+
+        if b is not None:
+            for i, (Ai, bi) in enumerate(zip(A.rows(), b)):
+                self.protocols[i].updateFunc(Ai, bi)
+        else:
+            for i, Ai in enumerate(A.rows()):
+                self.protocols[i].updateFunc(Ai)
+
 
     def keygen(self, T):
         return tuple(zip(*[protocol.keygen(T) for protocol in self.protocols]))
@@ -33,8 +41,8 @@ class VerifiableMatMul:
         return all(protocol.verify(pki, fki, z, vi, sgmi) for protocol, pki, fki, vi, sgmi in zip(self.protocols, pk, fk, v, sgm))
 
 
-class MatMulWrapper:
-    def __init__(self, A, b = None, T = 10, precision = 1, delta = 10_000):
+class VerifiableMatMul(VerifiableMatMulInner):
+    def __init__(self, A, b = None, precision = 1, delta = 10_000):
         self.precision = precision
 
         self.A = A
@@ -43,19 +51,7 @@ class MatMulWrapper:
 
         self.delta = vector(self.b.base_ring(), [delta] * self.b.degree())
 
-        self.protocol = VerifiableMatMul(self.A, self.precision * (self.b + self.delta))
-        pk, sk = self.protocol.keygen(T)
-
-        self.pk = pk
-        self._sk = sk
-
-        fk = self.protocol.setup(pk)
-        self.fk = fk
-
-    def verify(self, pk, fk, x, y, sgm):
-        x = self.precision * x
-        y = self.precision * (y + self.delta)
-        return self.protocol.verify(pk, fk, x, y, sgm)
+        super().__init__(self.A, self.precision * (self.b + self.delta))
 
     def updateFunc(self, A = None, b = None):
         if A is not None:
@@ -68,18 +64,18 @@ class MatMulWrapper:
                 raise ValueError("dimension of b does not match")
             self.b = b
 
-        self.protocol.updateFunc(self.A, self.precision * (self.b + self.delta))
-        fk = self.protocol.setup(self.pk)
-        self.fk = fk
+        super().updateFunc(self.A, self.precision * (self.b + self.delta))
 
-    """
-    Does A * x + b
-    """
-    def __call__(self, x, **kwargs):
+    def encrypt(self, pk, x):
         x = self.precision * x
-        C = self.protocol.encrypt(self.pk, x)
-        V, sgm = self.protocol.compute(self.pk, C)
-        y = vector(self.protocol.decrypt(self._sk, V))
-        y = y / self.precision - self.delta
-        return y, sgm
+        return super().encrypt(pk, x)
 
+    def decrypt(self, sk, V):
+        y = vector(super().decrypt(sk, V))
+        y = y / self.precision - self.delta
+        return y
+
+    def verify(self, pk, fk, x, y, sgm):
+        x = self.precision * x
+        y = self.precision * (y + self.delta)
+        return super().verify(pk, fk, x, y, sgm)

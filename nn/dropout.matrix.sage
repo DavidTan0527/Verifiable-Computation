@@ -11,10 +11,10 @@ class VerifiableDropout(VerifiableNNLayer):
             raise ValueError(f"dropout probability has to be between 0 and 1, but got {p}")
         self.p = p
 
-        self.protocol = MatMulWrapper(identity_matrix(self.size),
-                                      T = self.T,
-                                      precision = self.precision,
-                                      delta = self.delta)
+        self.protocol = VerifiableMatMul(identity_matrix(self.size),
+                                         T = self.T,
+                                         precision = self.precision,
+                                         delta = self.delta)
 
         self.pk = self.protocol.pk
         self.fk = self.protocol.fk

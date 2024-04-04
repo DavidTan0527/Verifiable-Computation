@@ -15,7 +15,7 @@ ntmp = {}
 tnmp = {}
 
 print(f"#rounds = {rounds}")
-for M, N in list(product(Ms, Ns))[18:]:
+for M, N in list(product(Ms, Ns))[34:]:
     comp_total = 0
     verf_total = 0
     for _ in range(rounds):
@@ -23,7 +23,7 @@ for M, N in list(product(Ms, Ns))[18:]:
         b = vector(random_matrix(Zmod(10000), A.nrows(), 1).list()).lift()
         x = vector(random_matrix(Zmod(10000), A.ncols(), 1).list()).lift()
 
-        Av = MatMulWrapper(A, b, T = 128)
+        Av = VerifiableMatMul(A, b, T = 128)
         pk, fk = Av.pk, Av.fk
 
 
